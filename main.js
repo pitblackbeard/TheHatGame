@@ -8,10 +8,11 @@ const pathCharacter = '*';
 
 
 class Field {
-    constructor(width, height, difficult) {
-        this.height = height;
-        this.width = width;
-        this.difficult = difficult;
+    constructor() {
+        this.size;
+        this.height = this.size;
+        this.width = this.size;
+        this.difficult = 2;
         this.field = [];
 
         this.hatPositionY = 0;
@@ -25,9 +26,11 @@ class Field {
         this.gameContinue = true;
     }
 
-    getRandomPositionX = () => Math.floor(Math.random() * this.width);
 
-    getRandomPositionY = () => Math.floor(Math.random() * this.height);
+
+    getRandomX = () => Math.floor(Math.random() * this.width);
+
+    getRandomY = () => Math.floor(Math.random() * this.height);
 
     generateFieldRow = () => {
         let fieldRow = [];
@@ -47,10 +50,10 @@ class Field {
     addHoles = () => {
         let counter = 0;
         while (counter < this.difficult) {
-            let selectRow = this.getRandomPositionY();
-            let selectPosition = this.getRandomPositionX();
-            if (this.field[selectRow][selectPosition] !== hole) {
-                this.field[selectRow][selectPosition] = hole;
+            let holePositionY = this.getRandomY();
+            let holePositionX = this.getRandomX();
+            if (this.field[holePositionY][holePositionX] !== hole) {
+                this.field[holePositionY][holePositionX] = hole;
                 counter++;
             }
 
@@ -60,26 +63,74 @@ class Field {
 
     addHat = () => {
         do {
-            this.hatPositionY = this.getRandomPositionY();
-            this.hatPositionX = this.getRandomPositionX();
+            this.hatPositionY = this.getRandomY();
+            this.hatPositionX = this.getRandomX();
         }
-        while (this.field[this.hatPositionY][this.hatPositionX] === hole);
+        while (this.isHole());
         
         this.field[this.hatPositionY][this.hatPositionX] = hat;
     }
 
     addStartPosition = () => {
         do {
-            this.currentPositionY = this.getRandomPositionY();
-            this.currentPositionX = this.getRandomPositionX();
+            this.currentPositionY = this.getRandomY();
+            this.currentPositionX = this.getRandomX();
         }
-        while (this.field[this.currentPositionY][this.currentPositionX] === hole || this.field[this.currentPositionY][this.currentPositionX] === hat);
+        while (this.isHole() || this.isHat());
         
         this.field[this.currentPositionY][this.currentPositionX] = pathCharacter;
     }
     
     print = () => {
     this.field.forEach(element => console.log(element.join(' ')));
+    }
+
+    pickSize = () => {
+        this.size = prompt('Pick your game board size: XS, S, M, L or XL > ').toUpperCase();
+        switch(this.size) {
+            case 'XS':
+                this.size = 2;
+                break;
+            case 'S':
+                this.size = 6;
+                break;
+            case 'M':
+                this.size = 8;
+                break;
+            case 'L':
+                this.size = 10;
+                break;
+            case 'XL':
+                this.size = 40;
+                break;
+            default:
+                prompt('Come on, if you don\'t pick a valid size, you will die in this loop');
+                this.pickSize();
+
+        }
+    }
+
+    pickDifficult = () => {
+        this.difficult = prompt('Pick your difficult: 0 (easy), 1 (normal), 2 (hard), 666 (...) > ').toUpperCase();
+        switch(this.difficult){
+            case '0':
+                this.difficult = this.size * 1;
+                break;
+            case '1':
+                this.difficult = this.size * this.size * 0.2;
+                break;
+            case '2':
+                this.difficult = this.size * this.size * 0.4;
+                break;
+            case '1000':
+                this.difficult = (this.size * this.size) - 2;
+                break;
+        }
+        if (this.size === 2) {
+            this.difficult = 2;
+            return
+        };
+    
     }
 
     generateField = () => {
@@ -113,7 +164,7 @@ class Field {
     }
 
     getInput = () => {
-        return this.input = prompt('Move!\nL > left \| R > right \| U > up \| D > down').toUpperCase();
+        return this.input = prompt('Move! L > left \| R > right \| U > up \| D > down  ').toUpperCase();
     }
 
     updatePosition = () => {
@@ -132,7 +183,7 @@ class Field {
                 break;
             case 'E':
                 this.gameContinue = false;
-                console.log('Sad you left!');
+                prompt('Sad you left!');
                 break;
             default:
                 this.getInput();
@@ -160,6 +211,43 @@ class Field {
         };
     }
 
+    static createNewGame(newSize, newDifficult) {
+        let newGame = new Field(newSize, newDifficult);
+        return newGame;
+    }
+
+}
+
+
+
+//let myField = new Field(12, 3);
+//myField.runGame();
+
+//prompt('Size: '), prompt('Difficult:')
+
+
+
+runGame = () => {
+    console.log('troncho 1');
+    let newGame = Field.createNewGame();
+    console.log('troncho 2');
+    newGame.pickSize();
+    console.log('troncho 3');
+    newGame.pickDifficult();
+    newGame.generateField();
+    console.log('troncho 4')
+    while (newGame.gameContinue) {
+        newGame.print();
+        newGame.getInput();
+        newGame.updatePosition();
+        newGame.move();
+        newGame.updatePath();
+    }
+}
+
+runGame();
+
+/*
     runGame = () => {
         this.generateField();
         while (this.gameContinue) {
@@ -170,7 +258,4 @@ class Field {
             this.updatePath();
         }
     }
-}
-
-let myField = new Field(12, 12, 20);
-myField.runGame();
+*/
